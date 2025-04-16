@@ -5,7 +5,7 @@ import Solicitacao from "./components/Solicitacao";
 function App() {
   return (
     <>
-      {/* <Contador /> */}
+       {/* <Contador />  */}
       <Solicitacao />
     </>
   );

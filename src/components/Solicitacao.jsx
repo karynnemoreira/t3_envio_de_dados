@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./Solicitacao.module.scss";
+import Api from "../Services/Api"; //importando a api que está guardada na pasta Services
 
 import Motivo from "../assets/motivo.png";
 import Lixeira from "../assets/lixeira.png";
@@ -46,11 +47,68 @@ function Solicitacao() {
     };
 
     setDadosReembolso(dadosReembolso.concat(objetoReembolso));
+    limparCampos();
   };
+
+  //FUNÇÃO PARA LIMPAR TODOS OS CAMPOS DO FORMULÁRIO
+
+  const limparCampos = () => {
+    setColaborador(""),
+      setEmpresa(""),
+      setnPrestacao(""),
+      setDescricao(""),
+      setData(""),
+      setMotivo(""),
+      setTipoReembolso(""),
+      setCentroCusto(""),
+      setOrdemInterna(""),
+      setDivisao(""),
+      setPep(""),
+      setMoeda(""),
+      setDistanciaKm(""),
+      setValorKm(""),
+      setValorFaturado(""),
+      setDespesa("");
+  };
+
+  //FUNÇÃO PARA ENVIAR OS DADOS PARA A API
+  const [foiEnviado, setFoiEnviado] = useState(false); //Esse estado serve para saber se o formulário foi enviado.
+
+  const enviarParaAnalise = async () => {
+    try {
+      // const response = O resultado da resposta do servidor
+      // await (esperar) = Faz com que o código espere a resposta da API
+      // Api é a nossa api
+      // post = é um método que serve para enviar algo para o servidor
+      //             (1º argumento é o caminho da rota, 2º argumento é o que será enviado)
+      const response = await Api.post("/refunds/new", dadosReembolso);
+      console.log("Resposta da API", response); // Mostra no console a resposta da API (útil para os desenvolvedores testarem)
+      alert("Reembolso solicitado com sucesso!"); //Mostra um alerda avisando que deu certo
+      setFoiEnviado(true); //
+    } catch (error) {
+      //Caso dê erro na hora de enviar, ele mostra no console.
+      console.log("Erro ao enviar", error); //Mostra o erro se algo der errado
+    }
+  };
+
+  useEffect(() => {
+    if (foiEnviado) {
+      setDadosReembolso([]); //Zera o formulário depois do envio
+      setFoiEnviado(false); //Voltou ao estado original (false)
+    }
+  }, [foiEnviado]); //observe essa variável
+
+
+ //Resumo simplificado:
+  //useState cria variáveis que guardam informações e atualizam a tela.
+  //A função enviarParaAnalise manda os dados pra um servidor (API).
+  // useEffect roda automaticamente quando a variável foiEnviado muda.
+  //Depois que os dados são enviados, ele limpa tudo pra poder começar de novo.
+
 
   return (
     <>
-      <form onSubmit={(e) => e.preventDefault() } >
+      <form onSubmit={(e) => e.preventDefault()}>
         <div>
           <div>
             <label htmlFor="nome"> Nome Completo</label>
@@ -212,7 +270,7 @@ function Solicitacao() {
           <div>
             <label htmlFor="faturado"> Val. Faturado </label>
             <input
-              type="text"
+              type="number"
               name="valorFaturado"
               value={valorFaturado}
               onChange={(e) => setValorFaturado(e.target.value)}
@@ -222,7 +280,7 @@ function Solicitacao() {
           <div>
             <label htmlFor="taxa"> Despesa </label>
             <input
-              type="text"
+              type="number"
               name="despesa"
               value={despesa}
               onChange={(e) => setDespesa(e.target.value)}
@@ -234,7 +292,7 @@ function Solicitacao() {
               <img src="" alt="" /> Salvar
             </button>
 
-            <button type="button">
+            <button type="button" onClick={limparCampos}>
               <img src="" alt="" /> Deletar
             </button>
           </div>
@@ -266,12 +324,18 @@ function Solicitacao() {
         <tbody>
           {dadosReembolso.map((item, index) => (
             <tr key={index}>
-              <td> <img src={Lixeira} alt="" />  </td>
+              <td>
+                {" "}
+                <img src={Lixeira} alt="" />{" "}
+              </td>
               <td> {item.colaborador} </td>
               <td> {item.empresa} </td>
               <td>{item.nPrestacao}</td>
               <td>{item.data}</td>
-              <td> <img src={Motivo} alt="" /> </td>
+              <td>
+                {" "}
+                <img src={Motivo} alt="" />{" "}
+              </td>
               <td>{item.tipoReembolso}</td>
               <td>{item.centroCusto}</td>
               <td>{item.ordemInterna}</td>
@@ -286,6 +350,8 @@ function Solicitacao() {
           ))}
         </tbody>
       </table>
+
+      <button onClick={enviarParaAnalise}> Enviar para análise </button>
     </>
   );
 }
